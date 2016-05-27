@@ -1,7 +1,5 @@
 package INU_10_system_logowania;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -56,8 +54,11 @@ public class LoginBox {
 		usrListComoBox.setPromptText("nazwa uzytkownika");
 		usrListComoBox.setVisibleRowCount(3);
 		usrListComoBox.setOnAction(e->{
+			// need to check if user list value is User object (was chosen by mouse) or String object (was typed in on keyboard)
+			Object usrTempObj = usrListComoBox.getValue();
+			if (usrTempObj.getClass().equals(activUser.getClass())) { activUser = (String)usrTempObj;}
+			else { activUser = usrTempObj.toString();}
 			passPassField.setDisable(false);
-			activUser = usrListComoBox.getValue().toString();
 			System.out.println("!!!! Zmieniona wartosc pola \"Uzytkownik\" na <" + activUser + ">");
 		});
 		// gets user login name typed in login field
@@ -78,6 +79,7 @@ public class LoginBox {
 		okBtn.setMinWidth(130);
 		okBtn.setOnAction(e-> {
 			usrListComoBox.setValue(new User(activUser));
+			activUser = usrListComoBox.getValue().toString();
 			checkLoginData(usrListComoBox.getValue().toString(),passPassField.getText());		
 		});
 		okBtn.setDefaultButton(true);	
@@ -118,8 +120,13 @@ public class LoginBox {
 	
 		// scene settings
 		Scene scene = new Scene(mainHbox,700,300);
-		//if password field is empty it disable "OK" button
+		//if activUser is empty it disable password field, if password field is empty it disable "OK" button
 		scene.setOnKeyReleased(e->{
+			if (activUser.length() == 0) {
+				passPassField.setDisable(true);
+				passPassField.setText("");
+			}
+			else { passPassField.setDisable(false);}
 			if(passPassField.getText().length() > 0) {okBtn.setDisable(false);}
 			else {okBtn.setDisable(true);}
 		});
@@ -138,17 +145,41 @@ public class LoginBox {
 	// helper method to check login data (login and password)
 	private void checkLoginData(String login, String pass) {
 		
-		if (pass.length() == 0 && login.length() == 0){ System.out.println("BLAD! Wprowadz prawidlowy login i haslo!"); return; }
-		if (login.length() == 0){ System.out.println("BLAD! Wprowadz poprawny login!"); return; }
-		if (pass.length() == 0){ System.out.println("BLAD! Wprowadz poprawne haslo dla uzytkownika <" + login + ">"); return; }
+		CancelMessageBox errorMsgBox = new CancelMessageBox();
+		String errorMsgText = "";
+		
+		if (pass.length() == 0 && login.length() == 0){ 
+			errorMsgText = "BLAD! Wprowadz prawidlowy login i haslo!"; 
+			errorMsgBox.show(errorMsgText);
+			System.out.println(errorMsgText);
+			return; }
+		
+		else if (login.length() == 0){ 
+			errorMsgText = "BLAD! Wprowadz poprawny login!"; 
+			errorMsgBox.show(errorMsgText);
+			System.out.println(errorMsgText);
+			return; }
+		
+		else if (pass.length() == 0){ 
+			errorMsgText = "BLAD! Wprowadz poprawne haslo dla uzytkownika <" + login + ">"; 
+			errorMsgBox.show(errorMsgText);
+			System.out.println(errorMsgText);
+			return; }
+		
+		else if (!login.contains(".")){
+			errorMsgText = "BLAD! Niepoprawna nazwa uzytkownika! Uzytkownik <" + login + "> nie istnieje"; 
+			errorMsgBox.show(errorMsgText);
+			System.out.println(errorMsgText);
+			return;
+		}
+		
 		else if(login.contains(".")) {
-			System.out.println("OK! Uzytkonik <" + login + "> zalogowany do systemu");
+			String msgText = "OK! Uzytkonik <" + login + "> zalogowany do systemu"; 
+			OkMessageBox okMsg = new OkMessageBox();
+			okMsg.show(msgText);
+			System.out.println(msgText);
 			status = true;
 			stage.close();
-		}
-		else if (!login.contains(".")){
-			activUser = login;
-			System.out.println("BLAD! Niepoprawna nazwa uzytkownika! Uzytkownik <" + login + "> nie istnieje");
 		}
 	}
 	
