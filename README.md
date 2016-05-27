@@ -1,1 +1,3 @@
-# JavaEE_INU_System_logowania
+# JavaFX_INU_System_logowania
+
+Okno systemu logowania (LoginBox)
